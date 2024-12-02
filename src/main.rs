@@ -1,8 +1,9 @@
 use std::time::Instant;
 
-use day_one::{part_one, part_two};
+use day_two::{part_one, part_two};
 
 mod day_one;
+mod day_two;
 
 fn main() {
     let now = Instant::now();
