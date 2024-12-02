@@ -1,110 +1,55 @@
 use std::fs::read_to_string;
 
-pub fn part_one() {
-    let max_increase = 3;
+pub fn get_reports() -> Vec<Vec<i32>> {
     let file = read_to_string("input/day2.txt").expect("File doesn't exist");
 
-    let reports: Vec<Vec<i32>> = file
-        .lines()
+    file.lines()
         .map(|line| {
             line.split_whitespace()
-                .map(|num| num.parse().unwrap())
+                .zip(line.split_whitespace().skip(1))
+                .map(|(curr, next)| curr.parse::<i32>().unwrap() - next.parse::<i32>().unwrap())
                 .collect()
         })
-        .collect();
+        .collect()
+}
 
+pub fn safe_reports(safe_buff: i32, reports: &Vec<Vec<i32>>) -> i32 {
+    let max_increase = 3;
     let mut safe_reports = 0;
 
     for report in reports {
-        let mut increasing = true;
-        let mut safe = true;
+        let mut safe_buff = safe_buff;
+        let increasing = report[0] < 0;
 
-        if report[0] - report[1] > 0 {
-            increasing = false;
-        }
-
-        for (idx, level) in report.iter().enumerate() {
-            if idx == report.len() - 1 {
-                break;
-            }
-            let diff = level - report[idx + 1];
-
-            if diff.abs() > max_increase || diff.abs() == 0 {
-                safe = false;
-                break;
+        for &curr in report.iter() {
+            if curr.abs() > max_increase || curr == 0 {
+                safe_buff -= 1;
             }
 
-            if increasing && diff > 0 {
-                safe = false;
-            } else if !increasing && diff < 0 {
-                safe = false;
+            if increasing && curr > 0 {
+                safe_buff -= 1;
+            } else if !increasing && curr < 0 {
+                safe_buff -= 1;
             }
         }
-        if safe {
+
+        if safe_buff >= 0 {
             safe_reports += 1;
         }
     }
 
+    safe_reports
+}
+
+pub fn part_one() {
+    let reports: Vec<Vec<i32>> = get_reports();
+
+    let safe_reports = safe_reports(0, &reports);
     println!("SAFE {safe_reports}")
 }
 
 pub fn part_two() {
-    let max_increase = 3;
-    let file = read_to_string("input/day2.txt").expect("File doesn't exist");
-
-    let reports: Vec<Vec<i32>> = file
-        .lines()
-        .map(|line| {
-            line.split_whitespace()
-                .map(|num| num.parse().unwrap())
-                .collect()
-        })
-        .collect();
-
-    let mut safe_reports = 0;
-
-    for report in reports {
-        let mut increasing = true;
-        let mut safe = true;
-        let mut ignore_once = true;
-
-        if report[0] - report[1] > 0 {
-            increasing = false;
-        }
-
-        for (idx, level) in report.iter().enumerate() {
-            if idx == report.len() - 1 {
-                break;
-            }
-            let diff = level - report[idx + 1];
-
-            if diff.abs() > max_increase || diff.abs() == 0 {
-                if ignore_once {
-                    ignore_once = false;
-                    continue;
-                }
-                safe = false;
-                break;
-            }
-
-            if increasing && diff > 0 {
-                if ignore_once {
-                    ignore_once = false;
-                    continue;
-                }
-                safe = false;
-            } else if !increasing && diff < 0 {
-                if ignore_once {
-                    ignore_once = false;
-                    continue;
-                }
-                safe = false;
-            }
-        }
-        if safe {
-            safe_reports += 1;
-        }
-    }
-
-    println!("SAFE {safe_reports}")
+    let reports: Vec<Vec<i32>> = get_reports();
+    let safe_reports = safe_reports(1, &reports);
+    println!("SAFE {safe_reports}");
 }
